@@ -1,4 +1,4 @@
-// Mode plein écran
+// === Mode plein écran ===
 function enableFullscreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) {
@@ -10,23 +10,27 @@ function enableFullscreen() {
   }
 }
 
-// Timer de compte à rebours
+// === Timer compte à rebours ===
 let seconds = 3600;
 const timerEl = document.getElementById("timer");
 
+const alarmSound = document.getElementById("alarmSound");
+const keySound = document.getElementById("keySound");
+
 setInterval(() => {
   seconds--;
+  if(seconds < 0) seconds = 0;
   const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
   const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
   const s = String(seconds % 60).padStart(2, "0");
   timerEl.textContent = `Temps restant : ${h}:${m}:${s}`;
 
   if (seconds === 1800) {
-    document.getElementById("alarmSound").play().catch(() => {});
+    alarmSound.play().catch(() => {});
   }
 }, 1000);
 
-// Texte encrypté glitché
+// === Texte glitché encrypté ===
 const msgEl = document.getElementById("message");
 const baseMsg = "CHIFFREMENT DES DONNÉES EN COURS...";
 
@@ -43,7 +47,7 @@ setInterval(() => {
   msgEl.textContent = glitched;
 }, 80);
 
-// Matrix rouge sombre
+// === Matrix rouge sombre ===
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 canvas.height = window.innerHeight;
@@ -73,3 +77,55 @@ window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 });
+
+// === Faux terminal ===
+const terminalContainer = document.getElementById("terminal-container");
+const terminal = document.getElementById("terminal");
+const closeBtn = document.getElementById("close-terminal");
+
+const fakeCommands = [
+  "[+] Connexion établie avec 192.168.0.3",
+  "[+] Accès root obtenu",
+  "[+] Téléchargement des mots de passe...",
+  "[*] Analyse des fichiers sensibles...",
+  "[!] Chiffrement de /home en cours...",
+  "[!] Suppression des logs système...",
+  "[+] Clé RSA injectée",
+  "[*] Envoi des données vers serveur distant...",
+  "[*] Injection de malware réussie",
+  "[!] Données exfiltrées : 24.3MB",
+  "[!] Suppression de toutes les sauvegardes...",
+  "[+] Mission accomplie. Rançon demandée."
+];
+
+let cmdIndex = 0;
+let terminalInterval;
+
+// Afficher le terminal après 3 secondes
+setTimeout(() => {
+  terminalContainer.classList.remove("hidden");
+  // Jouer le son en boucle
+  keySound.play().catch(() => {});
+  // Commencer à écrire dans le terminal
+  terminalInterval = setInterval(() => {
+    let line;
+    if (cmdIndex < fakeCommands.length) {
+      line = fakeCommands[cmdIndex];
+      cmdIndex++;
+    } else {
+      line = [...Array(60)].map(() =>
+        Math.floor(Math.random() * 16).toString(16).toUpperCase()
+      ).join(" ");
+    }
+    terminal.textContent += line + "\n";
+    terminal.scrollTop = terminal.scrollHeight;
+  }, 600);
+}, 3000);
+
+// Fermer le terminal
+closeBtn.onclick = () => {
+  terminalContainer.classList.add("hidden");
+  clearInterval(terminalInterval);
+  keySound.pause();
+  keySound.currentTime = 0;
+};
