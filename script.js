@@ -1,4 +1,4 @@
-// Compte à rebours 10 minutes
+// --------- COMPTE À REBOURS ET PROGRESSION ----------
 let time = 10 * 60;
 const countdownEl = document.getElementById('countdown');
 const progressEl = document.getElementById('progress');
@@ -17,6 +17,7 @@ const lines = [
   'Chiffrement terminé.',
   'Base de données effacée.',
   'Aucune restauration possible.',
+  'Système irrécupérable.',
 ];
 
 function updateCountdown() {
@@ -37,7 +38,7 @@ function updateCountdown() {
 
 const countdownInterval = setInterval(updateCountdown, 1000);
 
-// Affiche des lignes dans le terminal
+// --------- TERMINAL FAUSSE SORTIE ----------
 function addTerminalLine() {
   const line = lines[Math.floor(Math.random() * lines.length)];
   const el = document.createElement('div');
@@ -47,7 +48,7 @@ function addTerminalLine() {
 }
 setInterval(addTerminalLine, 800);
 
-// Effet Matrix avec des 0 et 1
+// --------- EFFET MATRIX ROUGE ----------
 const canvas = document.getElementById('matrixCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -75,26 +76,8 @@ function drawMatrix() {
 }
 
 setInterval(drawMatrix, 50);
-// Plein écran automatique
-document.addEventListener('DOMContentLoaded', () => {
-  const requestFullscreen = document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
-  if (requestFullscreen) {
-    requestFullscreen.call(document.body);
-  }
-});
 
-// Masquer la souris quand elle est sur la page
-document.body.style.cursor = 'none';
-// Réactiver le plein écran si on en sort
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement) {
-    const requestFullscreen = document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
-    if (requestFullscreen) {
-      requestFullscreen.call(document.body);
-    }
-  }
-});
-// Fonction pour activer le plein écran
+// --------- PLEIN ÉCRAN AUTOMATIQUE ---------
 function activateFullscreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen();
@@ -105,5 +88,22 @@ function activateFullscreen() {
 // Lancer le plein écran au premier clic
 document.addEventListener('click', function handleClickOnce() {
   activateFullscreen();
-  document.removeEventListener('click', handleClickOnce); // ne le fait qu'une seule fois
+  document.removeEventListener('click', handleClickOnce);
+});
+
+// Réactiver le plein écran si on en sort
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    activateFullscreen();
+  }
+});
+
+// --------- MOUSE HIDE APRÈS INACTIVITÉ ---------
+let mouseTimeout;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  clearTimeout(mouseTimeout);
+  mouseTimeout = setTimeout(() => {
+    document.body.style.cursor = 'none';
+  }, 1000);
 });
