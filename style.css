@@ -2,9 +2,8 @@ html, body {
   margin: 0;
   padding: 0;
   background: black;
-  color: #ff0000;
-  font-family: monospace;
   overflow: hidden;
+  font-family: monospace;
 }
 
 canvas {
@@ -18,7 +17,7 @@ canvas {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 60px;
+  padding: 80px;
   color: red;
   text-shadow: 0 0 10px red, 0 0 20px red;
   animation: flicker 0.2s infinite alternate;
@@ -43,31 +42,6 @@ canvas {
   animation: flicker 0.4s infinite alternate;
 }
 
-.terminal {
-  background-color: rgba(0, 0, 0, 0.7);
-  border: 1px solid lime;
-  color: lime;
-  font-size: 14px;
-  padding: 15px;
-  margin-top: 40px;
-  height: 200px;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-  overflow-y: hidden;
-  font-family: monospace;
-  text-align: left;
-  box-shadow: 0 0 10px lime;
-  animation: flicker 0.3s infinite alternate;
-  white-space: pre-wrap;
-}
-
-.terminal::after {
-  content: " >";
-  animation: blink 1s infinite;
-  color: lime;
-}
-
 @keyframes glitch {
   0% { transform: translate(0, 0); }
   10% { transform: translate(-3px, 2px); }
@@ -80,9 +54,4 @@ canvas {
 @keyframes flicker {
   from { opacity: 1; }
   to { opacity: 0.3; }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
