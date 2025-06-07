@@ -2,34 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>⚠️ SYSTÈME PIRATÉ ⚠️</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Critical System Alert</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body onclick="enableFullscreen()">
+<body onclick="enterFullscreen()">
+  <audio id="alarm" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-tone-996.mp3" autoplay loop></audio>
 
-<canvas id="matrix"></canvas>
+  <div class="overlay"></div>
 
-<div class="content">
-  <div class="glitch-text">⚠️ SYSTÈME PIRATÉ ⚠️</div>
-  <div class="corrupted" id="message">CHIFFREMENT DES DONNÉES EN COURS...</div>
-  <div class="corrupted" id="timer">Temps restant : 01:00:00</div>
-  <p class="small">Cliquez n'importe où pour continuer...</p>
-</div>
-
-<!-- Faux terminal -->
-<div id="terminal-container" class="hidden">
-  <div id="terminal-header">
-    <span>Terminal pirate</span>
-    <button id="close-terminal">✖</button>
+  <div class="content">
+    <h1 class="glitch">⚠️ ACCÈS REFUSÉ - FICHIERS CHIFFRÉS ⚠️</h1>
+    <p class="instructions">Un paiement est requis dans le délai imparti pour récupérer l'accès à vos données.</p>
+    <div class="countdown" id="countdown">10:00</div>
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="terminal" id="terminal"></div>
   </div>
-  <pre id="terminal"></pre>
-</div>
 
-<!-- Sons -->
-<audio id="alarmSound" src="https://www.soundjay.com/button/sounds/beep-07.mp3" preload="auto"></audio>
-<audio id="keySound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto" loop></audio>
-<audio id="sirenSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" preload="auto" loop></audio>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
