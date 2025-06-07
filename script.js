@@ -1,67 +1,77 @@
-const countdownEl = document.getElementById("countdown");
-const progressBar = document.getElementById("progress");
-let timeLeft = 600; // 10 minutes
+// Compte à rebours 10 minutes
+let time = 10 * 60;
+const countdownEl = document.getElementById('countdown');
+const progressEl = document.getElementById('progress');
+const finalMessage = document.getElementById('final-message');
+const outputEl = document.getElementById('output');
+
+const totalTime = time;
+const lines = [
+  'Tentative de récupération...',
+  'Échec de la récupération.',
+  'Erreur critique.',
+  'Connexion perdue.',
+  'Fichiers introuvables.',
+  'Serveur compromis.',
+  'Chiffrement en cours...',
+  'Chiffrement terminé.',
+  'Base de données effacée.',
+  'Aucune restauration possible.',
+];
 
 function updateCountdown() {
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-  countdownEl.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  const progressPercent = ((600 - timeLeft) / 600) * 100;
-  progressBar.style.width = `${progressPercent}%`;
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-  if (timeLeft > 0) {
-    timeLeft--;
-    setTimeout(updateCountdown, 1000);
+  const progress = 100 - (time / totalTime * 100);
+  progressEl.style.width = `${progress}%`;
+
+  if (time <= 0) {
+    clearInterval(countdownInterval);
+    finalMessage.classList.remove('hidden');
   } else {
-    terminal.innerHTML += `<div style="color:red; font-weight:bold;">[#] TEMPS ÉCOULÉ - SUPPRESSION DÉFINITIVE EN COURS...</div>`;
+    time--;
   }
 }
 
-updateCountdown();
+const countdownInterval = setInterval(updateCountdown, 1000);
 
-function enterFullscreen() {
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+// Affiche des lignes dans le terminal
+function addTerminalLine() {
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  const el = document.createElement('div');
+  el.textContent = line;
+  outputEl.appendChild(el);
+  outputEl.scrollTop = outputEl.scrollHeight;
+}
+setInterval(addTerminalLine, 800);
+
+// Effet Matrix avec des 0 et 1
+const canvas = document.getElementById('matrixCanvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const columns = Math.floor(canvas.width / 20);
+const drops = new Array(columns).fill(1);
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#ff0000';
+  ctx.font = '16px monospace';
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = Math.random() > 0.5 ? '0' : '1';
+    ctx.fillText(text, i * 20, drops[i] * 20);
+    if (drops[i] * 20 > canvas.height || Math.random() > 0.95) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
 }
 
-const terminal = document.getElementById("terminal");
-
-const messages = [
-  "[#] Initialisation du module d'attaque...",
-  "[#] Connexion à 127.0.0.1:666...",
-  "[#] Analyse des fichiers en cours...",
-  "[#] Fichiers trouvés : 48 392",
-  "[#] Chiffrement avec AES-256...",
-  "[#] Création de la clé de déchiffrement...",
-  "[#] Clé supprimée localement.",
-  "[#] Transfert en cours vers serveur onion...",
-  "[#] Upload terminé.",
-  "[#] Infiltration du BIOS...",
-  "[#] Processus PID 8743 terminé.",
-  "[#] Activation du verrouillage du système.",
-  "[#] Suppression des points de restauration...",
-  "[#] Injection dans le MBR détectée...",
-  "[#] Persistance assurée après redémarrage.",
-  "[#] Surveillance clavier activée.",
-  "[#] Caméra détectée - flux en direct...",
-  "[#] Transfert bancaire simulé...",
-  "[#] Données personnelles exportées.",
-  "[#] Attente de paiement...",
-  "[#] Récupération impossible sans la clé.",
-  "[#] DERNIER AVERTISSEMENT.",
-];
-
-let index = 0;
-
-function typeTerminalLine() {
-  if (index >= messages.length) index = 0;
-  const line = document.createElement("div");
-  line.textContent = messages[index++];
-  terminal.appendChild(line);
-  terminal.scrollTop = terminal.scrollHeight;
-  setTimeout(typeTerminalLine, 1000 + Math.random() * 500);
-}
-
-typeTerminalLine();
+setInterval(drawMatrix, 50);
