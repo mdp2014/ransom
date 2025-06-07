@@ -11,7 +11,7 @@ function enableFullscreen() {
 }
 
 // === Timer compte à rebours ===
-let seconds = 3600;
+let seconds = 600;  // 10 minutes au lieu de 3600 (1 heure)
 const timerEl = document.getElementById("timer");
 
 const alarmSound = document.getElementById("alarmSound");
@@ -21,12 +21,11 @@ const sirenSound = document.getElementById("sirenSound");
 setInterval(() => {
   seconds--;
   if(seconds < 0) seconds = 0;
-  const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
-  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+  const m = String(Math.floor(seconds / 60)).padStart(2, "0");
   const s = String(seconds % 60).padStart(2, "0");
-  timerEl.textContent = `Temps restant : ${h}:${m}:${s}`;
+  timerEl.textContent = `Temps restant : 00:${m}:${s}`;
 
-  if (seconds === 1800) {
+  if (seconds === 300) {  // à 5 minutes, joue l'alarme
     alarmSound.play().catch(() => {});
   }
 }, 1000);
