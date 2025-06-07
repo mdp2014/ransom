@@ -3,142 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>!!! SYSTEM COMPROMIS !!!</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: black;
-      color: #ff0000;
-      font-family: monospace;
-      overflow: hidden;
-    }
-
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-
-    .content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 60px;
-      color: red;
-      text-shadow: 0 0 5px red;
-      animation: flicker 0.2s infinite alternate;
-    }
-
-    .glitch-text {
-      font-size: 48px;
-      display: inline-block;
-      animation: glitch 0.3s infinite;
-    }
-
-    .corrupted {
-      font-size: 22px;
-      margin-top: 30px;
-      animation: flicker 0.1s infinite alternate;
-    }
-
-    @keyframes glitch {
-      0% { transform: translate(0, 0); }
-      20% { transform: translate(-2px, 2px); }
-      40% { transform: translate(2px, -2px); }
-      60% { transform: translate(-1px, 1px); }
-      80% { transform: translate(1px, -1px); }
-      100% { transform: translate(0, 0); }
-    }
-
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.5; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
 
-<div class="content">
+<div class="content" onclick="enableFullscreen()">
   <div class="glitch-text">⚠️ SYSTEME PIRATÉ ⚠️</div>
   <div class="corrupted" id="message">CHIFFREMENT DES DONNÉES EN COURS...</div>
   <div class="corrupted" id="timer">Temps restant : 01:00:00</div>
+  <p class="small">Cliquez n'importe où pour continuer...</p>
 </div>
 
-<script>
-// 💥 Mode plein écran
-document.addEventListener("DOMContentLoaded", () => {
-  const el = document.documentElement;
-  if (el.requestFullscreen) {
-    el.requestFullscreen().catch(() => {});
-  }
-});
-
-// ⌛ Timer
-let seconds = 3600;
-const timerEl = document.getElementById("timer");
-setInterval(() => {
-  seconds--;
-  const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
-  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-  const s = String(seconds % 60).padStart(2, "0");
-  timerEl.textContent = `Temps restant : ${h}:${m}:${s}`;
-}, 1000);
-
-// 🧠 Texte encrypté simulé
-const msgEl = document.getElementById("message");
-const baseMsg = "CHIFFREMENT DES DONNÉES EN COURS...";
-function randomChar() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&@!";
-  return chars[Math.floor(Math.random() * chars.length)];
-}
-setInterval(() => {
-  let glitched = "";
-  for (let i = 0; i < baseMsg.length; i++) {
-    glitched += Math.random() > 0.2 ? baseMsg[i] : randomChar();
-  }
-  msgEl.textContent = glitched;
-}, 100);
-
-// 🧮 Matrix background
-const canvas = document.getElementById("matrix");
-const ctx = canvas.getContext("2d");
-
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-const letters = "01";
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-
-const drops = Array.from({length: columns}).map(() => 1);
-
-function draw() {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#0F0";
-  ctx.font = fontSize + "px monospace";
-
-  for (let i = 0; i < drops.length; i++) {
-    const text = letters.charAt(Math.floor(Math.random() * letters.length));
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-    if (Math.random() > 0.975) drops[i] = 0;
-    drops[i]++;
-  }
-}
-
-setInterval(draw, 33);
-
-// 💥 Resize adaptatif
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
