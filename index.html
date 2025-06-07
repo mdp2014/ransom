@@ -2,21 +2,25 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Critical System Alert</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
-<body onclick="enterFullscreen()">
-  <div class="matrix-bg"></div>
-  <div class="content">
+<body>
+  <canvas id="matrixCanvas"></canvas>
+
+  <div class="overlay">
     <h1 class="glitch">⚠️ ACCÈS REFUSÉ - FICHIERS CHIFFRÉS ⚠️</h1>
-    <div id="countdown">10:00</div>
-    <div class="progress-bar"><div class="progress" id="progress"></div></div>
-    <div id="terminal" class="terminal"></div>
+    <div class="terminal">
+      <div id="countdown">10:00</div>
+      <div class="progress-bar">
+        <div id="progress"></div>
+      </div>
+      <div id="output"></div>
+      <div id="final-message" class="hidden">🛑 SYSTÈME IRRÉCUPÉRABLE 🛑</div>
+    </div>
   </div>
-  <audio autoplay loop>
-    <source src="alert.mp3" type="audio/mpeg" />
-  </audio>
+
   <script src="script.js"></script>
 </body>
 </html>
