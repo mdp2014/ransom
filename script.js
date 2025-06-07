@@ -16,6 +16,7 @@ const timerEl = document.getElementById("timer");
 
 const alarmSound = document.getElementById("alarmSound");
 const keySound = document.getElementById("keySound");
+const sirenSound = document.getElementById("sirenSound");
 
 setInterval(() => {
   seconds--;
@@ -104,8 +105,9 @@ let terminalInterval;
 // Afficher le terminal après 3 secondes
 setTimeout(() => {
   terminalContainer.classList.remove("hidden");
-  // Jouer le son en boucle
+  // Jouer les sons en boucle
   keySound.play().catch(() => {});
+  sirenSound.play().catch(() => {});
   // Commencer à écrire dans le terminal
   terminalInterval = setInterval(() => {
     let line;
@@ -117,7 +119,7 @@ setTimeout(() => {
         Math.floor(Math.random() * 16).toString(16).toUpperCase()
       ).join(" ");
     }
-    terminal.textContent += line + "\n";
+    terminal.textContent += line + "\\n";
     terminal.scrollTop = terminal.scrollHeight;
   }, 600);
 }, 3000);
@@ -128,4 +130,6 @@ closeBtn.onclick = () => {
   clearInterval(terminalInterval);
   keySound.pause();
   keySound.currentTime = 0;
+  sirenSound.pause();
+  sirenSound.currentTime = 0;
 };
