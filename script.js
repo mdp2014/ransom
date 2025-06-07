@@ -85,3 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Masquer la souris quand elle est sur la page
 document.body.style.cursor = 'none';
+// Réactiver le plein écran si on en sort
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    const requestFullscreen = document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+    if (requestFullscreen) {
+      requestFullscreen.call(document.body);
+    }
+  }
+});
