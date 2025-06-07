@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>!!! SYSTEME PIRATÉ !!!</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>⚠️ SYSTÈME PIRATÉ ⚠️</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body onclick="enableFullscreen()">
 
 <canvas id="matrix"></canvas>
 
-<div class="content" onclick="enableFullscreen()">
-  <div class="glitch-text">⚠️ SYSTEME PIRATÉ ⚠️</div>
+<div class="content">
+  <div class="glitch-text">⚠️ SYSTÈME PIRATÉ ⚠️</div>
   <div class="corrupted" id="message">CHIFFREMENT DES DONNÉES EN COURS...</div>
   <div class="corrupted" id="timer">Temps restant : 01:00:00</div>
-  <div class="terminal" id="terminal"></div>
   <p class="small">Cliquez n'importe où pour continuer...</p>
 </div>
 
 <!-- Sons -->
-<audio id="keySound" src="https://www.soundjay.com/keyboard/sounds/keyboard-6.mp3" preload="auto"></audio>
 <audio id="alarmSound" src="https://www.soundjay.com/button/sounds/beep-07.mp3" preload="auto"></audio>
 
 <script src="script.js"></script>
