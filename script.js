@@ -75,3 +75,13 @@ function drawMatrix() {
 }
 
 setInterval(drawMatrix, 50);
+// Plein écran automatique
+document.addEventListener('DOMContentLoaded', () => {
+  const requestFullscreen = document.body.requestFullscreen || document.body.webkitRequestFullscreen || document.body.mozRequestFullScreen || document.body.msRequestFullscreen;
+  if (requestFullscreen) {
+    requestFullscreen.call(document.body);
+  }
+});
+
+// Masquer la souris quand elle est sur la page
+document.body.style.cursor = 'none';
