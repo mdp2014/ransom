@@ -94,3 +94,16 @@ document.addEventListener('fullscreenchange', () => {
     }
   }
 });
+// Fonction pour activer le plein écran
+function activateFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
+
+// Lancer le plein écran au premier clic
+document.addEventListener('click', function handleClickOnce() {
+  activateFullscreen();
+  document.removeEventListener('click', handleClickOnce); // ne le fait qu'une seule fois
+});
