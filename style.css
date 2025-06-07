@@ -1,0 +1,58 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  color: #ff0000;
+  font-family: monospace;
+  overflow: hidden;
+}
+
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 60px;
+  color: red;
+  text-shadow: 0 0 10px red, 0 0 20px red;
+  animation: flicker 0.2s infinite alternate;
+}
+
+.glitch-text {
+  font-size: 64px;
+  font-weight: bold;
+  animation: glitch 0.2s infinite;
+}
+
+.corrupted {
+  font-size: 26px;
+  margin-top: 30px;
+  animation: flicker 0.1s infinite alternate;
+}
+
+.small {
+  font-size: 14px;
+  color: gray;
+  margin-top: 50px;
+  animation: flicker 0.4s infinite alternate;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-3px, 2px); }
+  20% { transform: translate(2px, -3px); }
+  30% { transform: translate(-2px, 1px); }
+  40% { transform: translate(1px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes flicker {
+  from { opacity: 1; }
+  to { opacity: 0.3; }
+}
