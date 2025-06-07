@@ -2,111 +2,142 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>VOTRE SYSTÈME A ÉTÉ PIRATÉ</title>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <title>!!! SYSTEM COMPROMIS !!!</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       background: black;
-      color: red;
-      font-family: 'VT323', monospace;
-      font-size: 24px;
+      color: #ff0000;
+      font-family: monospace;
       overflow: hidden;
     }
 
-    #binary {
+    canvas {
       position: fixed;
       top: 0;
       left: 0;
-      color: green;
-      font-size: 16px;
-      opacity: 0.1;
-      pointer-events: none;
-      white-space: pre;
       z-index: 0;
     }
 
-    .container {
+    .content {
       position: relative;
       z-index: 1;
-      padding: 60px;
       text-align: center;
-      animation: flicker 1s infinite alternate;
-    }
-
-    @keyframes flicker {
-      0% { opacity: 1; }
-      100% { opacity: 0.6; }
-    }
-
-    h1 {
-      font-size: 48px;
+      padding: 60px;
       color: red;
-      text-shadow: 0 0 10px red;
-    }
-
-    .warning {
-      background: rgba(255, 0, 0, 0.1);
-      border: 2px solid red;
-      padding: 20px;
-      margin-top: 30px;
-      display: inline-block;
       text-shadow: 0 0 5px red;
+      animation: flicker 0.2s infinite alternate;
     }
 
-    .glitch {
+    .glitch-text {
+      font-size: 48px;
+      display: inline-block;
       animation: glitch 0.3s infinite;
     }
 
+    .corrupted {
+      font-size: 22px;
+      margin-top: 30px;
+      animation: flicker 0.1s infinite alternate;
+    }
+
     @keyframes glitch {
-      0% { transform: translate(0); }
+      0% { transform: translate(0, 0); }
       20% { transform: translate(-2px, 2px); }
       40% { transform: translate(2px, -2px); }
       60% { transform: translate(-1px, 1px); }
       80% { transform: translate(1px, -1px); }
-      100% { transform: translate(0); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes flicker {
+      from { opacity: 1; }
+      to { opacity: 0.5; }
     }
   </style>
 </head>
 <body>
 
-<pre id="binary"></pre>
+<canvas id="matrix"></canvas>
 
-<div class="container">
-  <h1 class="glitch">⚠️ VOUS AVEZ ÉTÉ PIRATÉ ⚠️</h1>
-  <div class="warning">
-    <p>Toutes vos données personnelles ont été chiffrées.</p>
-    <p>Pour les récupérer, vous devez envoyer 500€ en Bitcoin à l’adresse suivante :</p>
-    <p><strong>1FakeBitcoinAddress123456789</strong></p>
-    <p>Temps restant : <span id="timer">01:00:00</span></p>
-    <p>Après ce délai, vos fichiers seront supprimés définitivement.</p>
-  </div>
+<div class="content">
+  <div class="glitch-text">⚠️ SYSTEME PIRATÉ ⚠️</div>
+  <div class="corrupted" id="message">CHIFFREMENT DES DONNÉES EN COURS...</div>
+  <div class="corrupted" id="timer">Temps restant : 01:00:00</div>
 </div>
 
 <script>
-// Génére des lignes de 0 et 1
-const binary = document.getElementById('binary');
-let binLines = '';
-for (let i = 0; i < 100; i++) {
-  let line = '';
-  for (let j = 0; j < 100; j++) {
-    line += Math.random() > 0.5 ? '1' : '0';
+// 💥 Mode plein écran
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.documentElement;
+  if (el.requestFullscreen) {
+    el.requestFullscreen().catch(() => {});
   }
-  binLines += line + '\n';
-}
-binary.textContent = binLines;
+});
 
-// Compte à rebours
-let totalSeconds = 3600;
-const timer = document.getElementById('timer');
+// ⌛ Timer
+let seconds = 3600;
+const timerEl = document.getElementById("timer");
 setInterval(() => {
-  totalSeconds--;
-  const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const s = String(totalSeconds % 60).padStart(2, '0');
-  timer.textContent = `${h}:${m}:${s}`;
+  seconds--;
+  const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+  const s = String(seconds % 60).padStart(2, "0");
+  timerEl.textContent = `Temps restant : ${h}:${m}:${s}`;
 }, 1000);
+
+// 🧠 Texte encrypté simulé
+const msgEl = document.getElementById("message");
+const baseMsg = "CHIFFREMENT DES DONNÉES EN COURS...";
+function randomChar() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&@!";
+  return chars[Math.floor(Math.random() * chars.length)];
+}
+setInterval(() => {
+  let glitched = "";
+  for (let i = 0; i < baseMsg.length; i++) {
+    glitched += Math.random() > 0.2 ? baseMsg[i] : randomChar();
+  }
+  msgEl.textContent = glitched;
+}, 100);
+
+// 🧮 Matrix background
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+const letters = "01";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+
+const drops = Array.from({length: columns}).map(() => 1);
+
+function draw() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#0F0";
+  ctx.font = fontSize + "px monospace";
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters.charAt(Math.floor(Math.random() * letters.length));
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+
+setInterval(draw, 33);
+
+// 💥 Resize adaptatif
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
