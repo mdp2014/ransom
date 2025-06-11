@@ -1,7 +1,9 @@
+// --------- INCLURE HOWLER.JS VIA CDN ----------
 (function() {
   const script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js';
   script.onload = function() {
+    // --------- COMPTE À REBOURS ET PROGRESSION ----------
     let time = 10 * 60;
     const countdownEl = document.getElementById('countdown');
     const progressEl = document.getElementById('progress');
@@ -135,6 +137,7 @@
 
     const countdownInterval = setInterval(updateCountdown, 1000);
 
+    // --------- TERMINAL FAUSSE SORTIE ----------
     function addTerminalLine() {
       const line = lines[Math.floor(Math.random() * lines.length)];
       const el = document.createElement('div');
@@ -145,6 +148,7 @@
 
     setInterval(addTerminalLine, 800);
 
+    // --------- EFFET MATRIX ROUGE ----------
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -169,6 +173,7 @@
 
     setInterval(drawMatrix, 50);
 
+    // --------- PLEIN ÉCRAN AUTOMATIQUE ---------
     function activateFullscreen() {
       const el = document.documentElement;
       if (el.requestFullscreen) el.requestFullscreen();
@@ -176,26 +181,30 @@
       else if (el.msRequestFullscreen) el.msRequestFullscreen();
     }
 
+    // Lancer le plein écran au premier clic
     document.addEventListener('click', function handleClickOnce() {
       activateFullscreen();
       document.removeEventListener('click', handleClickOnce);
     });
 
+    // Réactiver le plein écran si on en sort
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement) {
         activateFullscreen();
       }
     });
 
+    // --------- MOUSE HIDE APRÈS INACTIVITÉ ---------
     let mouseTimeout;
     document.addEventListener('mousemove', () => {
-      document.body.style.cursor = 'default';
+      document.body.style.cursor = 'none';
       clearTimeout(mouseTimeout);
       mouseTimeout = setTimeout(() => {
-        document.body.style.cursor = 'none';
+        document.body.style.cursor = 'default';
       }, 1000);
     });
 
+    // --------- AJOUTER UN SON AVEC HOWLER.JS ----------
     function playAlertSound() {
       const sound = new Howl({
         src: ['https://www.soundjay.com/button/sounds/button-3.mp3'],
@@ -206,6 +215,18 @@
       });
       sound.play();
     }
+
+    // --------- CURSEUR CRYPTÉ ----------
+    const customCursor = document.createElement('div');
+    customCursor.id = 'customCursor';
+    customCursor.textContent = '0';
+    document.body.appendChild(customCursor);
+
+    document.addEventListener('mousemove', (e) => {
+      customCursor.style.left = `${e.pageX}px`;
+      customCursor.style.top = `${e.pageY}px`;
+      customCursor.textContent = Math.random() > 0.5 ? '0' : '1';
+    });
   };
   document.head.appendChild(script);
 })();
