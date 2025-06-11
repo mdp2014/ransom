@@ -100,3 +100,28 @@ body, html {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+#customCursor {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: red;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
