@@ -1,230 +1,514 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal Pirate</title>
-  <style>
-    body {
-      background: black;
-      color: #00ff99;
-      font-family: "Courier New", monospace;
-      overflow: hidden;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Critical System Alert — Demo</title>
+<style>
+  /* Reset & base */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html,body { width:100%; height:100%; background:#000; font-family: "Courier New", Courier, monospace; color:#ff4444; overflow:hidden; }
 
-    #glitch {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        rgba(0, 0, 0, 0.05),
-        rgba(255, 255, 255, 0.05) 2px
-      );
-      mix-blend-mode: difference;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-      z-index: 10;
-    }
+  /* Canvas full-screen layers */
+  canvas.full { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 
-    #glitch.active {
-      animation: glitchFlash 0.1s infinite;
-      opacity: 0.5;
-    }
+  /* UI container that sits above the canvases */
+  .ui {
+    position:relative; z-index:5; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center; background:transparent;
+  }
 
-    @keyframes glitchFlash {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(-5px, 2px); }
-      50% { transform: translate(5px, -2px); }
-      75% { transform: translate(-2px, -5px); }
-      100% { transform: translate(0, 0); }
-    }
+  /* Start button */
+  .start-wrap { text-align:center; }
+  .start-btn {
+    background:linear-gradient(#660000,#aa0000); color:#fff; border:2px solid #ff4444;
+    padding:18px 28px; font-size:1.6rem; border-radius:8px; cursor:pointer;
+    box-shadow:0 6px 30px rgba(255,0,0,0.12), inset 0 -6px 30px rgba(0,0,0,0.3);
+  }
+  .start-btn:active { transform:translateY(2px); }
 
-    #terminal {
-      width: 90%;
-      max-width: 800px;
-      height: 80vh;
-      background: rgba(0, 0, 0, 0.9);
-      border: 2px solid #00ff99;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 0 20px #00ff99;
-      overflow-y: auto;
-      display: none;
-    }
+  /* Overlay that appears after start (terminal + header) */
+  .overlay {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    z-index:6; pointer-events:none;
+  }
+  .panel {
+    pointer-events:auto;
+    width:86%; max-width:900px; background:rgba(8,8,8,0.85);
+    border:2px solid rgba(255,50,50,0.9); padding:18px; box-shadow:0 0 40px rgba(255,0,0,0.12);
+    text-align:center;
+  }
+  .glitch-title {
+    font-size:1.8rem; color:#ff6666; text-shadow:0 0 8px #ff0000;
+    margin-bottom:12px;
+    display:inline-block;
+    animation:glitchText 1s infinite;
+  }
+  @keyframes glitchText {
+    0% { text-shadow:2px 2px #ff0000, -2px -2px rgba(255,0,0,0.15); transform:translateX(0); }
+    50% { text-shadow:-4px 3px rgba(255,0,0,0.9); transform:translateX(-1px); }
+    100% { text-shadow:2px -3px rgba(255,0,0,0.5); transform:translateX(0); }
+  }
 
-    #click-btn {
-      background: #00ff99;
-      color: black;
-      font-size: 1.5em;
-      border: none;
-      padding: 20px 40px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 0 20px #00ff99;
-    }
+  /* Terminal look */
+  .terminal {
+    margin-top:12px; background:#070707; border:1px solid rgba(255,0,0,0.3);
+    padding:12px; max-height:260px; overflow:auto; text-align:left;
+    color:#ff9b9b; font-size:0.95rem; line-height:1.4; box-shadow:0 8px 40px rgba(255,0,0,0.04);
+  }
 
-    #click-btn:hover {
-      background: black;
-      color: #00ff99;
-      box-shadow: 0 0 40px #00ff99;
-    }
-  </style>
+  #countdown { font-weight:700; color:#ff6666; font-size:1.4rem; margin-bottom:8px; }
+  .progress-bar { width:100%; height:12px; background:#220000; border:1px solid rgba(255,0,0,0.2); margin-bottom:8px; }
+  #progress { width:0%; height:100%; background:linear-gradient(90deg,#ff0000,#ff7b7b); transition:width 1s linear; }
+
+  #final-message { display:none; color:#ff2222; font-size:1.6rem; margin-top:10px; animation:blink 1s infinite; }
+  .show-final { display:block; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* scanline + flicker overlay (subtle) */
+  .scanlines {
+    position:fixed; inset:0; z-index:4; pointer-events:none;
+    background-image: linear-gradient(rgba(0,0,0,0.0) 50%, rgba(0,0,0,0.08) 50%);
+    background-size:100% 4px; mix-blend-mode:multiply; opacity:0.7;
+  }
+
+  /* noise overlay */
+  .noise { position:fixed; inset:0; z-index:7; pointer-events:none; opacity:0.12; mix-blend-mode:screen; }
+
+  /* small red flicker flashes */
+  .flicker {
+    position:fixed; inset:0; z-index:8; pointer-events:none; background:transparent; opacity:0;
+    animation:flickerAnim 6s infinite;
+  }
+  @keyframes flickerAnim {
+    0% { opacity:0 }
+    2% { opacity:0.22 }
+    4% { opacity:0 }
+    40% { opacity:0 }
+    42% { opacity:0.18 }
+    44% { opacity:0 }
+    80% { opacity:0 }
+    82% { opacity:0.12 }
+    84% { opacity:0 }
+  }
+
+  /* small helper for "click to start" note */
+  .hint { margin-top:10px; color:#aa6666; font-size:0.9rem; }
+
+  /* custom cursor inside active session */
+  .customCursor {
+    position:fixed; width:18px; height:18px; border-radius:50%; z-index:1000;
+    background:rgba(0,0,0,0.65); color:#ff6666; display:flex; align-items:center; justify-content:center;
+    font-family:monospace; font-size:12px; pointer-events:none; border:1px solid rgba(255,0,0,0.2);
+    transform:translate(-50%,-50%);
+  }
+
+  /* hide initial overlay when session is not started */
+  .hidden { display:none !important; }
+
+  /* responsive font sizes */
+  @media (max-width:540px) {
+    .glitch-title { font-size:1.2rem; }
+    .start-btn { font-size:1.2rem; padding:12px 18px; }
+    .terminal { font-size:0.85rem; max-height:200px; }
+  }
+</style>
 </head>
 <body>
-  <div id="glitch"></div>
-  <button id="click-btn">☠️ CLIQUE ICI ☠️</button>
-  <div id="terminal"></div>
 
-  <script>
-    const terminal = document.getElementById("terminal");
-    const button = document.getElementById("click-btn");
-    const glitch = document.getElementById("glitch");
+  <!-- Canvas layers: 0 = binary rain, 1 = interference noise -->
+  <canvas id="matrixCanvas" class="full"></canvas>
+  <canvas id="interfCanvas" class="full"></canvas>
+  <div class="scanlines"></div>
+  <div class="flicker"></div>
+  <div id="noiseImg" class="noise hidden"></div>
 
-    const lines = [
-    'Initialisation du protocole Σ-13...',
-      'Injection du vecteur d’attaque ZeroDay...',
-      'Détection d’une signature inconnue [HASH:0xE6F9A1]...',
-      'Exécution du module Blackout.exe...',
-      'Bypass du pare-feu réussi.',
-      'Élévation de privilèges en cours...',
-      'Accès root obtenu.',
-      'Effacement des logs système...',
-      'Connexion au serveur maître établie.',
-      'Écriture dans le MBR détectée.',
-      'Altération du registre en cours...',
-      'Chiffrement des partitions C:, D:, E:...',
-      'Extraction de tokens de session...',
-      'Création de tunnel SSH clandestin...',
-      'Déploiement du backdoor [Cerberus.AI].',
-      'Encodage XOR actif.',
-      'Encapsulation dans le flux DNS...',
-      'Détection de sandbox. Passage en mode furtif.',
-      'Désactivation des protections antivirus.',
-      'Injection du loader polymorphe.',
-      'Surcharge du bus PCI-E...',
-      'Corruption du schéma mémoire.',
-      'Fuite de clé privée RSA détectée.',
-      'Blocage des ports 443, 80, 21...',
-      'Déconnexion forcée de tous les clients.',
-      'Exploit kernel 0xC0000428 en cours.',
-      'Téléversement de charge utile : 92%.',
-      'Processus SYSTEM_32 compromis.',
-      'Redéfinition des privilèges UID:0.',
-      'Manipulation de la pile TCP/IP.',
-      'Clé AES non valide — tentative de force brute.',
-      'Effacement progressif des secteurs système.',
-      'Connexion proxy inversé vers 185.21.42.90 établie.',
-      'Module "Spectre" activé.',
-      'Encodage base64 d’urgence lancé.',
-      'Fuite mémoire non contrôlée.',
-      'Surveillance désactivée par script root.',
-      'Chargement du rootkit Phantom-6...',
-      'Override des routines de vérification BIOS.',
-      'Saturation des entrées I/O en cours.',
-      'Modification des attributs NTFS.',
-      'Compression des volumes virtuels.',
-      'Réécriture de l’index LDAP.',
-      'Synchronisation avec botnet externe.',
-      'Verrouillage du clavier imminent.',
-      'Spoofing de la passerelle réseau.',
-      'Création de partitions leurres.',
-      'Script auto-destructeur activé.',
-      'Suppression silencieuse des comptes locaux.',
-      'Injection SQL dans la base "auth".',
-      'Session admin clonée.',
-      'Détection d’activité anormale dans /etc/shadow.',
-      'Override de la politique SELinux.',
-      'Séquence logicielle illégale en cours.',
-      'Protocole de fuite de données actif.',
-      'Modification de l’horloge système.',
-      'Forkbomb détectée.',
-      'Changement non autorisé dans le registre boot.',
-      'Empreinte numérique modifiée.',
-      'Signature cryptographique inconnue.',
-      'Falsification des certificats TLS.',
-      'Réécriture silencieuse du firmware.',
-      'Division par zéro en mémoire vive.',
-      'Signal ELF malformé intercepté.',
-      'Panne de contrôle du ventilateur CPU.',
-      'Overclocking non sollicité détecté.',
-      'Surcharge CPU critique.',
-      'Fluctuation de tension suspecte.',
-      'Entrée USB non identifiée analysée.',
-      'Code HEX injecté dans pile système.',
-      'Checksum incohérent dans le binaire principal.',
-      'Témoin de compromission : ACTIVÉ.',
-      'Programme résiduel : VISIBLE.',
-      'Script en boucle infinie détecté.',
-      'Clé BIOS piratée.',
-      'Driver falsifié en mémoire.',
-      'IP locale remplacée par valeur fantôme.',
-      'Alerte : collision MAC improbable.',
-      'Propagation virale interprocessus observée.',
-      'Redirection du flux DNS : INCONNUE.',
-      'Téléchargement depuis .onion confirmé.',
-      'Données utilisateurs compressées (97%)',
-      'Indexation forcée du répertoire racine.',
-      'Découverte d’un pattern "worm-like".',
-      'Requêtes anormales sur port 6667 (IRC).',
-      'Lien vers serveur TOR actif.',
-      'Certificat SSL auto-signé injecté.',
-      'Disque virtuel mappé sans autorisation.',
-      'Hash SHA-256 non reconnu.',
-      'Protocole ALPHA-NOVA violé.',
-      'Appel système : interdit.',
-      'Processus zombie détecté.',
-      'Encryption asymétrique renversée.',
-      'Tentative de spoof IPv6 local.',
-      'Détection de pattern "Stuxnet-like".',
-      'Démon de surveillance désactivé.',
-      'Fichier "config.sys" altéré.',
-      'Temps système désynchronisé (Δ = 214ms).',
-      'Modèle comportemental de l’utilisateur rompu.',
-      'Appareil en mode "ghost".',
-      'Écran principal désindexé.',
-      'Profondeur de pile dépassée.',
-      'Dernier point de restauration détruit.',
-      'Nœud maître injoignable.',
-      'Menace persistante avancée (APT) suspectée.',
-      'Ancrage du bootloader compromis.',
-      'Symétrie système perturbée.'
-    ];
+  <div class="ui">
+    <div class="start-wrap" id="startWrap">
+      <button id="startBtn" class="start-btn">🖱️ Cliquer ici pour démarrer</button>
+      <div class="hint">Autorise le son et le plein écran au clic pour un effet complet.</div>
+    </div>
+  </div>
 
-    button.addEventListener("click", () => {
-      glitch.classList.add("active");
-      button.style.display = "none";
+  <!-- Overlay visible after start -->
+  <div class="overlay hidden" id="overlay">
+    <div class="panel">
+      <div class="glitch-title">⚠️ ACCÈS REFUSÉ - FICHIERS CHIFFRÉS ⚠️</div>
+      <div id="countdown">10:00</div>
+      <div class="progress-bar"><div id="progress"></div></div>
+      <div class="terminal" id="output"></div>
+      <div id="final-message">🛑 SYSTÈME IRRÉCUPÉRABLE 🛑</div>
+    </div>
+  </div>
 
-      setTimeout(() => {
-        glitch.classList.remove("active");
-        terminal.style.display = "block";
-        startTerminal();
-      }, 1500);
-    });
+  <!-- custom cursor -->
+  <div id="customCursor" class="customCursor hidden">0</div>
 
-    function startTerminal() {
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < lines.length) {
-          const line = document.createElement("p");
-          line.textContent = lines[i];
-          terminal.appendChild(line);
-          terminal.scrollTop = terminal.scrollHeight;
-          i++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 700);
+<script>
+/* ===========================
+   Configuration (modifie ici)
+   =========================== */
+const TOTAL_SECONDS = 10 * 60; // durée totale du compte à rebours en secondes (ici 10min)
+const ACCELERATION_START_SECS_REMAINING = 60; // déclenche l'emballement quand il reste X secondes
+const ACCEL_DURATION_MS = 60 * 1000; // durée de l'emballement (1 minute)
+const ACCEL_INTERVAL_MS = 20; // intervalle entre lignes dans le terminal pendant l'emballement (plus petit = plus rapide)
+const NORMAL_INTERVAL_MS = 800; // intervalle normal entre lignes
+const MATRIX_BASE_DELAY = 40; // vitesse de base du "binary rain" (ms)
+const MATRIX_ACCEL_FACTOR = 0.35; // facteur pour accélérer la matrix pendant l'emballement
+/* =========================== */
+
+let timeLeft = TOTAL_SECONDS;
+let terminalInterval = null;
+let matrixInterval = null;
+let matrixDelay = MATRIX_BASE_DELAY;
+let matrixColumns = 0, drops = [];
+let running = false;
+let accelerated = false;
+const lines = [
+  'Initialisation du protocole Σ-13...',
+  'Injection du vecteur d’attaque ZeroDay...',
+  'Détection d’une signature inconnue [HASH:0xE6F9A1]...',
+  'Exécution du module Blackout.exe...',
+  'Bypass du pare-feu réussi.',
+  'Élévation de privilèges en cours...',
+  'Accès root obtenu.',
+  'Effacement des logs système...',
+  'Connexion au serveur maître établie.',
+  'Écriture dans le MBR détectée.',
+  'Altération du registre en cours...',
+  'Chiffrement des partitions C:, D:, E:...',
+  'Extraction de tokens de session...',
+  'Création de tunnel SSH clandestin...',
+  'Déploiement du backdoor [Cerberus.AI].',
+  'Encodage XOR actif.',
+  'Encapsulation dans le flux DNS...',
+  'Détection de sandbox. Passage en mode furtif.',
+  'Désactivation des protections antivirus.',
+  'Injection du loader polymorphe.',
+  'Surcharge du bus PCI-E...',
+  'Corruption du schéma mémoire.',
+  'Fuite de clé privée RSA détectée.',
+  'Blocage des ports 443, 80, 21...',
+  'Déconnexion forcée de tous les clients.',
+  'Exploit kernel 0xC0000428 en cours.',
+  'Téléversement de charge utile : 92%.',
+  'Processus SYSTEM_32 compromis.',
+  'Redéfinition des privilèges UID:0.',
+  'Manipulation de la pile TCP/IP.',
+  'Clé AES non valide — tentative de force brute.',
+  'Effacement progressif des secteurs système.',
+  'Connexion proxy inversé vers 185.21.42.90 établie.',
+  'Module "Spectre" activé.',
+  'Encodage base64 d’urgence lancé.'
+];
+
+const startBtn = document.getElementById('startBtn');
+const startWrap = document.getElementById('startWrap');
+const overlay = document.getElementById('overlay');
+const outputEl = document.getElementById('output');
+const countdownEl = document.getElementById('countdown');
+const progressEl = document.getElementById('progress');
+const finalMessage = document.getElementById('final-message');
+const matrixCanvas = document.getElementById('matrixCanvas');
+const interfCanvas = document.getElementById('interfCanvas');
+const customCursor = document.getElementById('customCursor');
+const flicker = document.querySelector('.flicker');
+const scanlines = document.querySelector('.scanlines');
+
+const ctx = matrixCanvas.getContext('2d');
+const ictx = interfCanvas.getContext('2d');
+
+/* Resize canvases */
+function resizeCanvases(){
+  matrixCanvas.width = window.innerWidth;
+  matrixCanvas.height = window.innerHeight;
+  interfCanvas.width = window.innerWidth;
+  interfCanvas.height = window.innerHeight;
+
+  // colonnes dépendant de la largeur — on augmente la densité des 0/1
+  matrixColumns = Math.floor(window.innerWidth / 12); // plus dense (12px par colonne)
+  drops = [];
+  for(let i=0;i<matrixColumns;i++) drops[i] = Math.random() * 100;
+}
+window.addEventListener('resize', resizeCanvases);
+resizeCanvases();
+
+/* Binary rain (plus dense + caractères mixtes) */
+function drawMatrix() {
+  // fond semi transparent pour effet traînée
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(0,0,matrixCanvas.width,matrixCanvas.height);
+
+  // texte rouge vif, plus gros pour visibilité
+  ctx.fillStyle = '#ff4d4d';
+  ctx.font = '13px monospace';
+
+  for(let i=0;i<drops.length;i++){
+    // choisir une séquence binaire (parfois groupes de 4-8 bits)
+    let chunkLen = (Math.random() > 0.85) ? 8 : 1;
+    let text = '';
+    for(let k=0;k<chunkLen;k++){
+      text += (Math.random() > 0.5 ? '1' : '0');
     }
-  </script>
+    let x = i * 12;
+    let y = drops[i] * 13;
+    ctx.fillText(text, x, y);
+
+    // retomber
+    if(y > matrixCanvas.height + Math.random() * 100) {
+      drops[i] = 0;
+    }
+    // accélération aléatoire + variation
+    drops[i] += 1 + Math.random()*3;
+  }
+}
+
+/* Interference canvas: bruit, flashes, horizontal glitches */
+function drawInterferenceFrame() {
+  ictx.clearRect(0,0,interfCanvas.width, interfCanvas.height);
+
+  // générer bandes horizontales aléatoires (bruit)
+  for(let i=0;i<6;i++){
+    if(Math.random() > 0.8) {
+      ictx.fillStyle = 'rgba(255,40,40,' + (0.02 + Math.random()*0.06) + ')';
+      let h = 1 + Math.random()*6;
+      let y = Math.random() * interfCanvas.height;
+      ictx.fillRect(0, y, interfCanvas.width, h);
+    }
+  }
+  // petites taches (grain)
+  for(let i=0;i<200;i++){
+    if(Math.random() > 0.96) {
+      ictx.fillStyle = 'rgba(255,255,255,' + (0.02 + Math.random()*0.08) + ')';
+      let x = Math.random() * interfCanvas.width;
+      let y = Math.random() * interfCanvas.height;
+      ictx.fillRect(x,y,1,1);
+    }
+  }
+  // horizontal slice glitch occasionally
+  if(Math.random() > 0.97) {
+    let sliceH = 8 + Math.random() * 40;
+    let y = Math.random() * (interfCanvas.height - sliceH);
+    // copy a small slice and offset it for glitch effect
+    let imgData = ictx.getImageData(0, y, interfCanvas.width, sliceH);
+    let dx = (Math.random() - 0.5) * 60;
+    ictx.putImageData(imgData, dx, y + (Math.random()-0.5)*6);
+  }
+
+  // subtle vignette / red cast
+  ictx.fillStyle = 'rgba(30,0,0,0.02)';
+  ictx.fillRect(0,0,interfCanvas.width, interfCanvas.height);
+}
+
+/* Start / stop loops */
+function startMatrixLoop() {
+  if(matrixInterval) clearInterval(matrixInterval);
+  matrixInterval = setInterval(drawMatrix, matrixDelay);
+}
+function startInterfLoop() {
+  if(window._interfId) clearInterval(window._interfId);
+  window._interfId = setInterval(drawInterferenceFrame, 120);
+}
+startInterfLoop();
+startMatrixLoop();
+
+/* Terminal lines */
+function addTerminalLine() {
+  // générer une ligne plus binaire-heavy parfois
+  if(Math.random() > 0.6) {
+    // binaire long
+    let len = 24 + Math.floor(Math.random()*60);
+    let bin = '';
+    for(let i=0;i<len;i++) bin += Math.random() > 0.6 ? '1' : '0';
+    appendOutput(bin);
+  } else {
+    const l = lines[Math.floor(Math.random() * lines.length)];
+    appendOutput(l);
+  }
+}
+function appendOutput(text) {
+  const el = document.createElement('div');
+  el.textContent = text;
+  outputEl.appendChild(el);
+  outputEl.scrollTop = outputEl.scrollHeight;
+  // limit DOM children to avoid OOM
+  if(outputEl.children.length > 2000) {
+    outputEl.removeChild(outputEl.firstChild);
+  }
+}
+
+/* Countdown update */
+function updateCountdownUI() {
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  countdownEl.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+  const progress = 100 - (timeLeft / TOTAL_SECONDS * 100);
+  progressEl.style.width = progress + '%';
+}
+
+/* Acceleration logic */
+function maybeTriggerAcceleration() {
+  if(!accelerated && timeLeft === ACCELERATION_START_SECS_REMAINING) {
+    accelerated = true;
+    // stop normal terminal interval and start a very fast one
+    if(terminalInterval) clearInterval(terminalInterval);
+    terminalInterval = setInterval(addTerminalLine, ACCEL_INTERVAL_MS);
+
+    // speed up matrix visual
+    clearInterval(matrixInterval);
+    matrixDelay = Math.max(8, Math.floor(MATRIX_BASE_DELAY * MATRIX_ACCEL_FACTOR));
+    startMatrixLoop();
+
+    // add extra flicker intensity
+    flicker.style.animation = 'flickerAnim 1.8s infinite';
+    flicker.style.opacity = 0.28;
+
+    // after ACCEL_DURATION_MS restore normal behaviour (if countdown still running)
+    setTimeout(() => {
+      if(timeLeft > 0) {
+        clearInterval(terminalInterval);
+        terminalInterval = setInterval(addTerminalLine, NORMAL_INTERVAL_MS);
+      }
+      matrixDelay = MATRIX_BASE_DELAY;
+      startMatrixLoop();
+      flicker.style.animation = 'flickerAnim 6s infinite';
+      flicker.style.opacity = 0.12;
+    }, ACCEL_DURATION_MS);
+  }
+}
+
+/* Finalize when time reaches 0 */
+function finalizeSequence() {
+  if(window._countdownId) clearInterval(window._countdownId);
+  if(terminalInterval) clearInterval(terminalInterval);
+  finalMessage.classList.add('show-final');
+  playAlertSound();
+}
+
+/* Audio: Using WebAudio for a quick alert beep (no external CDN) */
+let audioCtx = null;
+function playAlertSound() {
+  try {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.value = 220;
+    g.gain.value = 0.0001;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    // ramp gain quickly up and decay
+    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 1.1);
+    o.stop(audioCtx.currentTime + 1.12);
+  } catch(e) {
+    console.warn('Audio not available', e);
+  }
+}
+
+/* main countdown loop */
+function startCountdownLoop() {
+  updateCountdownUI();
+  if(terminalInterval) clearInterval(terminalInterval);
+  terminalInterval = setInterval(addTerminalLine, NORMAL_INTERVAL_MS);
+
+  window._countdownId = setInterval(() => {
+    if(timeLeft <= 0) {
+      finalizeSequence();
+    } else {
+      timeLeft--;
+      updateCountdownUI();
+      maybeTriggerAcceleration();
+      // occasional screen glitch (shake) effect:
+      if(Math.random() > 0.985) doScreenShake();
+    }
+  }, 1000);
+}
+
+/* small screen jitter to look like a 'bug' */
+function doScreenShake() {
+  const el = document.body;
+  const sx = (Math.random() - 0.5) * 10;
+  const sy = (Math.random() - 0.5) * 6;
+  el.style.transform = `translate(${sx}px, ${sy}px)`;
+  setTimeout(() => { el.style.transform = ''; }, 120 + Math.random()*120);
+}
+
+/* Custom cursor handling (binary cursor) */
+function enableCustomCursor() {
+  customCursor.classList.remove('hidden');
+  document.addEventListener('mousemove', e => {
+    customCursor.style.left = e.pageX + 'px';
+    customCursor.style.top = e.pageY + 'px';
+    customCursor.textContent = Math.random() > 0.5 ? '1' : '0';
+  });
+  // hide native cursor for stronger effect
+  document.body.style.cursor = 'none';
+}
+
+/* Start session on click */
+startBtn.addEventListener('click', async () => {
+  if(running) return;
+  running = true;
+
+  // Attempt to enter fullscreen (best-effort)
+  const el = document.documentElement;
+  if(el.requestFullscreen) {
+    try { await el.requestFullscreen(); } catch(e) { /* ignore */ }
+  } else if(el.webkitRequestFullscreen) {
+    try { el.webkitRequestFullscreen(); } catch(e) {}
+  }
+
+  // resume audio context on user gesture
+  try { if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume(); } catch(e){}
+
+  // hide start UI, show overlay
+  startWrap.classList.add('hidden');
+  overlay.classList.remove('hidden');
+
+  // enable cursor effect
+  enableCustomCursor();
+
+  // reset timeLeft to configured TOTAL_SECONDS
+  timeLeft = TOTAL_SECONDS;
+  accelerated = false;
+  finalMessage.classList.remove('show-final');
+  outputEl.innerHTML = '';
+
+  // start loops
+  startMatrixLoop();
+  startInterfLoop();
+  startCountdownLoop();
+});
+
+/* small startup polish: random small red flicker strength */
+flicker.style.background = 'radial-gradient(circle at 40% 20%, rgba(255,40,40,0.06), rgba(0,0,0,0))';
+
+/* initial small animation of matrix even before start (very subtle) */
+setInterval(() => {
+  // very low-intensity pre-draw to look alive before starting
+  if(!running) {
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(0,0,matrixCanvas.width,matrixCanvas.height);
+    ctx.fillStyle = 'rgba(70,0,0,0.6)';
+    ctx.font = '12px monospace';
+    for(let i=0;i<20;i++){
+      const x = Math.random() * matrixCanvas.width;
+      const y = Math.random() * matrixCanvas.height;
+      ctx.fillText(Math.random()>0.5 ? '0' : '1', x, y);
+    }
+  }
+}, 500);
+
+/* safety: when leaving fullscreen restart fullscreen attempt */
+document.addEventListener('fullscreenchange', () => {
+  if(running && !document.fullscreenElement) {
+    // try again briefly
+    const el = document.documentElement;
+    try { if(el.requestFullscreen) el.requestFullscreen(); } catch(e){}
+  }
+});
+</script>
 </body>
 </html>
